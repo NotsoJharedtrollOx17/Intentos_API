@@ -1,28 +1,37 @@
-import { Octokit } from "https://cdn.skypack.dev/octokit";
-    const GITHUB_TOKEN = "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"
+const ul = document.querySelector('ul')
 
-    const GithubAPI = new Octokit({
-        auth: GITHUB_TOKEN
-    });
+const inputText = document.getElementById("inputText"); 
+inputText.addEventListener("click", sendAPIRequest);
 
-    function getTextBoxText(id) {
-        const textBox = document.getElementById(id);
-        const textBox_text = textBox.getAttribute("value");
+function getTextBoxText(id) {
+    const textBox = document.getElementById(id);
+    const textBox_text = textBox.value;
+    
+    return textBox_text;
+}
 
-        return textBox_text;
-    }
+function sendAPIRequest() {
+    const owner = getTextBoxText("textBox");
+    const API_LINK= `https://api.github.com/users/${owner}/repos`;
+    
+    fetch(API_LINK).
+    then(async response => {
+        if(!response.ok) {
+            throw new Error(response.status);
+        }
 
-    function sendAPIRequest() {
-        const owner = getTextBoxText("textBox");
-        const repo = getTextBoxText("textBox1");
+        var data = await response.json();
 
-        const repo_data = GithubAPI.request("GET /repos/{owner}/{repo}", {
-            owner: owner,
-            repo: repo
-        });
-        
-        console.log(JSON.stringify(repo_data));
-    }
+        data.map(item => {
+            let li = document.createElement('li');
 
-    const inputText = document.getElementById("inputText"); 
-    inputText.addEventListener("click", sendAPIRequest);
+            li.innerHTML = `
+            <strong>${item.name.toUpperCase()}</strong>
+            <span>URL: ${item.url}</span>
+            `;
+
+            ul.appendChild(li);
+        })
+    }).
+    catch(error => console.log(error))
+}
